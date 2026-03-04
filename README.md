@@ -89,8 +89,10 @@ No external frameworks. No npm. No build process.
 
 ```
 weather-forecast/
-├── index.html      ← Entire project (HTML + CSS + JS in one file)
-└── README.md       ← This file
+├── index.html
+└── styles.css
+└── app.script     
+└── README.md     
 ```
 
 ---
