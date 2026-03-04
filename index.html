@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyPulse — Weather Forecast</title>
+
+  <!--
+    =============================================
+    EXTERNAL FONTS (Google Fonts)
+    Space Mono  → headings, temperatures, labels
+    DM Sans     → body text, descriptions
+    =============================================
+  -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <!--
+    =============================================
+    EXTERNAL STYLESHEET
+    All CSS lives in styles.css
+    =============================================
+  -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- =============================================
+       BACKGROUND LAYER
+       Fixed sky gradient + CSS cloud blobs (see styles.css).
+       Sits behind all content (z-index: 0).
+  ============================================= -->
+  <div class="sky-bg"></div>
+
+  <!-- Particle dots are created and appended here by app.js -->
+  <div class="particles" id="particles"></div>
+
+
+  <!-- =============================================
+       DETAIL MODAL
+       Hidden by default (display: none via CSS).
+       JavaScript adds class "open" to show it
+       when a forecast card is clicked.
+  ============================================= -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box" id="modalBox">
+
+      <!-- X Close button -->
+      <button class="modal-close" id="modalClose">&#x2715;</button>
+
+      <!-- Day heading e.g. "Wednesday, March 6" -->
+      <div class="modal-header">
+        <div class="modal-day-label">Detailed Forecast</div>
+        <div class="modal-day-full" id="modalDayFull">Monday</div>
+      </div>
+
+      <!-- Emoji icon + High / Low temperatures -->
+      <div class="modal-icon-temp">
+        <div class="modal-emoji" id="modalEmoji">&#x2600;&#xFE0F;</div>
+        <div class="modal-temps">
+          <div class="modal-temp-high" id="modalHigh">28&deg;</div>
+          <div class="modal-temp-low"  id="modalLow">18&deg;</div>
+        </div>
+      </div>
+
+      <!-- Weather condition text e.g. "Rainy" -->
+      <div class="modal-condition" id="modalCondition">Sunny</div>
+
+      <!-- 2x3 grid of weather detail stats -->
+      <div class="modal-details">
+        <div class="modal-detail-item">
+          <div class="modal-detail-label">&#x1F4A7; Humidity</div>
+          <div class="modal-detail-value" id="modalHumidity">55%</div>
+        </div>
+        <div class="modal-detail-item">
+          <div class="modal-detail-label">&#x1F4A8; Wind</div>
+          <div class="modal-detail-value" id="modalWind">12 km/h</div>
+        </div>
+        <div class="modal-detail-item">
+          <div class="modal-detail-label">&#x1F305; Sunrise</div>
+          <div class="modal-detail-value" id="modalSunrise">6:12 AM</div>
+        </div>
+        <div class="modal-detail-item">
+          <div class="modal-detail-label">&#x1F307; Sunset</div>
+          <div class="modal-detail-value" id="modalSunset">6:48 PM</div>
+        </div>
+        <div class="modal-detail-item">
+          <div class="modal-detail-label">&#x2614; Rain Chance</div>
+          <div class="modal-detail-value" id="modalRain">5%</div>
+        </div>
+        <div class="modal-detail-item">
+          <div class="modal-detail-label">&#x1F321;&#xFE0F; Feels Like</div>
+          <div class="modal-detail-value" id="modalFeels">26&deg;C</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- =============================================
+       MAIN APP WRAPPER
+       Flex column, centers all content vertically.
+  ============================================= -->
+  <div class="app-wrapper">
+
+    <!-- ==========================================
+         HEADER — Logo + Dark Mode Toggle
+    =========================================== -->
+    <header>
+      <div class="logo">Sky<span>Pulse</span></div>
+
+      <!--
+        onclick calls toggleDark() defined in app.js
+        CSS body.dark selector handles the visual change
+      -->
+      <div class="dark-toggle" id="darkToggle" onclick="toggleDark()">
+        <span id="toggleLabel">&#x2600;&#xFE0F; Light</span>
+        <div class="toggle-track">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+    </header>
+
+
+    <!-- ==========================================
+         SEARCH BAR
+         onkeydown triggers handleSearchKey() for Enter key support
+         onclick triggers searchCity() — both defined in app.js
+    =========================================== -->
+    <div class="search-section">
+      <div class="search-bar" id="searchBar">
+        <input
+          type="text"
+          id="cityInput"
+          placeholder="Search city — e.g. London, Tokyo, Mumbai..."
+          onkeydown="handleSearchKey(event)"
+        />
+        <button class="search-btn" onclick="searchCity()">Get Weather</button>
+      </div>
+    </div>
+
+
+    <!-- ==========================================
+         MAIN CURRENT WEATHER CARD
+         All values populated by renderWeather() in app.js
+    =========================================== -->
+    <div class="main-card" id="mainCard">
+      <div class="main-card-top">
+
+        <!-- Left: City name + date -->
+        <div class="city-info">
+          <div class="live-badge">
+            <div class="live-dot"></div>
+            Live
+          </div>
+          <div class="city-name" id="cityName">Mumbai</div>
+          <div class="city-date" id="cityDate">Loading...</div>
+        </div>
+
+        <!-- Centre: Animated weather icon injected by buildWeatherIcon() in app.js -->
+        <div class="weather-icon-wrap">
+          <div class="weather-icon-container" id="weatherIconContainer">
+            <!-- JS injects animated CSS elements here -->
+          </div>
+          <div class="condition-label" id="conditionLabel">Sunny</div>
+        </div>
+
+        <!-- Right: Temperature -->
+        <div class="temp-display">
+          <div class="temp-main"  id="tempMain">32&deg;C</div>
+          <div class="temp-feels" id="tempFeels">Feels like 35&deg;C</div>
+        </div>
+
+      </div>
+
+      <!-- Stats row: 6 weather detail tiles -->
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-icon">&#x1F4A7;</div>
+          <div class="stat-label">Humidity</div>
+          <div class="stat-value" id="statHumidity">72%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">&#x1F4A8;</div>
+          <div class="stat-label">Wind Speed</div>
+          <div class="stat-value" id="statWind">18 km/h</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">&#x2614;</div>
+          <div class="stat-label">Rain Chance</div>
+          <div class="stat-value" id="statRain">10%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">&#x1F441;&#xFE0F;</div>
+          <div class="stat-label">Visibility</div>
+          <div class="stat-value" id="statVisibility">8 km</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">&#x1F321;&#xFE0F;</div>
+          <div class="stat-label">UV Index</div>
+          <div class="stat-value" id="statUV">7</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">&#x1F305;</div>
+          <div class="stat-label">Sunrise</div>
+          <div class="stat-value" id="statSunrise">6:12 AM</div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         SECTION TITLE
+    =========================================== -->
+    <div class="section-title">
+      <h2>5-Day Forecast</h2>
+      <div class="section-line"></div>
+    </div>
+
+
+    <!-- ==========================================
+         FORECAST GRID
+         5 cards injected dynamically by renderWeather() in app.js
+         Each card has a staggered slideUp CSS animation
+         Click any card to trigger openModal() in app.js
+    =========================================== -->
+    <div class="forecast-grid" id="forecastGrid">
+      <!-- Cards created dynamically by JavaScript -->
+    </div>
+
+
+    <footer>SkyPulse Weather &middot; Mock Data Demo &middot; Built with HTML, CSS &amp; JavaScript</footer>
+
+  </div>
+
+
+  <!--
+    =============================================
+    EXTERNAL JAVASCRIPT
+    Placed at the bottom of <body> so that all
+    HTML elements are loaded in the DOM before
+    the script executes.
+    All logic lives in app.js.
+    =============================================
+  -->
+  <script src="app.js"></script>
+
+</body>
+</html>

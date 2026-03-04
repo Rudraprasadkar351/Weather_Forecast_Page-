@@ -1,0 +1,1016 @@
+/* =============================================
+   styles.css — SkyPulse Weather Forecast
+   All visual styling lives in this file.
+   Linked from index.html via <link> tag.
+============================================= */
+
+/* =============================================
+   1. CSS CUSTOM PROPERTIES (Variables)
+      Defined on :root so they're accessible
+      everywhere. Dark mode overrides them on body.dark
+============================================= */
+:root {
+  /* Light Mode Colors */
+  --bg-primary:    #e8f4fd;
+  --bg-card:       rgba(255, 255, 255, 0.55);
+  --bg-card-hover: rgba(255, 255, 255, 0.75);
+  --bg-glass:      rgba(255, 255, 255, 0.3);
+  --text-primary:  #0d1b2a;
+  --text-secondary:#4a6fa5;
+  --text-muted:    #7a9cc0;
+  --accent:        #3a86ff;
+  --accent-warm:   #ff6b35;
+  --accent-cool:   #06d6a0;
+  --shadow:        rgba(58, 134, 255, 0.15);
+  --border:        rgba(255, 255, 255, 0.6);
+  --gradient-sky:  linear-gradient(135deg, #74b9ff 0%, #a29bfe 50%, #fd79a8 100%);
+  --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+}
+
+/* Dark Mode: overrides the same variables when .dark is on body */
+body.dark {
+  --bg-primary:    #0a0f1e;
+  --bg-card:       rgba(16, 24, 48, 0.7);
+  --bg-card-hover: rgba(20, 32, 60, 0.85);
+  --bg-glass:      rgba(255, 255, 255, 0.05);
+  --text-primary:  #e8f0fe;
+  --text-secondary:#a0b4d0;
+  --text-muted:    #5a7a9a;
+  --accent:        #5b9cf6;
+  --shadow:        rgba(91, 156, 246, 0.2);
+  --border:        rgba(255, 255, 255, 0.1);
+  --gradient-sky:  linear-gradient(135deg, #1a1a4e 0%, #2d1b69 50%, #3d0030 100%);
+  --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+}
+
+/* =============================================
+   2. RESET & BASE STYLES
+      Removes default browser margins/padding
+      and sets consistent box-sizing
+============================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background 0.5s ease, color 0.5s ease;
+  overflow-x: hidden;
+}
+
+/* =============================================
+   3. ANIMATED BACKGROUND
+      Fixed sky gradient behind all content.
+      ::before and ::after create cloud blobs.
+============================================= */
+.sky-bg {
+  position: fixed;
+  inset: 0;
+  background: var(--gradient-sky);
+  z-index: 0;
+  transition: background 0.8s ease;
+}
+
+/* Layer 1: slower-moving cloud blobs */
+.sky-bg::before,
+.sky-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 200px 80px at 20% 30%, rgba(255,255,255,0.25) 0%, transparent 70%),
+    radial-gradient(ellipse 300px 100px at 70% 20%, rgba(255,255,255,0.2)  0%, transparent 70%),
+    radial-gradient(ellipse 150px 60px at 50% 60%, rgba(255,255,255,0.15) 0%, transparent 70%);
+  animation: cloudDrift 30s linear infinite;
+}
+
+/* Layer 2: faster, reversed cloud blobs for depth */
+.sky-bg::after {
+  background-image:
+    radial-gradient(ellipse 250px 90px at 80% 40%, rgba(255,255,255,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 180px 70px at 10% 70%, rgba(255,255,255,0.12) 0%, transparent 70%);
+  animation: cloudDrift 45s linear infinite reverse;
+  opacity: 0.7;
+}
+
+/* Particle container — particles injected by JS */
+.particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  animation: floatUp linear infinite;
+}
+
+/* =============================================
+   4. KEYFRAME ANIMATIONS
+      All @keyframes defined in one place
+      so they're easy to find and modify.
+============================================= */
+
+/* Sky clouds gently drifting left to right */
+@keyframes cloudDrift {
+  0%   { transform: translateX(-5%); }
+  50%  { transform: translateX(5%); }
+  100% { transform: translateX(-5%); }
+}
+
+/* Background particles rising and fading */
+@keyframes floatUp {
+  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.6; }
+  100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+}
+
+/* Sun rays spinning 360° continuously */
+@keyframes sunSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Sun core glowing in and out */
+@keyframes sunPulse {
+  0%, 100% { box-shadow: 0 0 30px 10px rgba(255, 200, 50, 0.4); }
+  50%       { box-shadow: 0 0 60px 25px rgba(255, 200, 50, 0.7); }
+}
+
+/* Rain drops falling downward */
+@keyframes rainFall {
+  0%   { transform: translateY(-10px); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateY(60px); opacity: 0; }
+}
+
+/* Clouds bobbing up and down gently */
+@keyframes cloudBob {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* Snowflakes drifting and rotating as they fall */
+@keyframes snowDrift {
+  0%   { transform: translateY(-5px) rotate(0deg); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateY(55px) rotate(180deg); opacity: 0; }
+}
+
+/* Lightning bolt flickering on/off during storm */
+@keyframes lightning {
+  0%, 90%, 100% { opacity: 0; }
+  92%, 96%      { opacity: 1; }
+  94%           { opacity: 0.3; }
+}
+
+/* Cards sliding up from below when page loads */
+@keyframes slideUp {
+  0%   { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Live badge pulsing ring to indicate real-time */
+@keyframes pulseRing {
+  0%   { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* Search bar shaking when city not found */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-8px); }
+  75%       { transform: translateX(8px); }
+}
+
+/* Modal appearing with scale + fade effect */
+@keyframes modalIn {
+  0%   { opacity: 0; transform: scale(0.9) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Wind lines sweeping horizontally for haze condition */
+@keyframes windBlow {
+  0%   { transform: translateX(-10px); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translateX(30px); opacity: 0; }
+}
+
+/* =============================================
+   5. MAIN LAYOUT WRAPPER
+      Centers everything, vertical flex layout
+============================================= */
+.app-wrapper {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* =============================================
+   6. HEADER — Logo + Dark Mode Toggle
+============================================= */
+header {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: slideUp 0.6s ease forwards;
+}
+
+.logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  letter-spacing: -1px;
+}
+
+.logo span {
+  color: rgba(255,255,255,0.6);
+}
+
+/* Dark Mode Toggle pill button */
+.dark-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 0.4rem 0.8rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  color: white;
+  font-size: 0.85rem;
+}
+
+.dark-toggle:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* The track (background of the switch) */
+.toggle-track {
+  width: 36px;
+  height: 20px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 10px;
+  position: relative;
+  transition: background 0.3s;
+}
+
+/* The sliding pill inside the switch */
+.toggle-thumb {
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.3s ease;
+}
+
+/* Move thumb right in dark mode */
+body.dark .toggle-thumb {
+  transform: translateX(16px);
+}
+
+body.dark .toggle-track {
+  background: var(--accent);
+}
+
+/* =============================================
+   7. SEARCH BAR
+============================================= */
+.search-section {
+  width: 100%;
+  max-width: 900px;
+  animation: slideUp 0.7s ease forwards;
+}
+
+.search-bar {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+/* Highlight border when input is focused */
+.search-bar:focus-within {
+  background: rgba(255,255,255,0.25);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+}
+
+.search-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.search-bar input::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+.search-btn {
+  background: white;
+  color: var(--accent);
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1.5rem;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.search-btn:hover {
+  background: var(--accent);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(58, 134, 255, 0.4);
+}
+
+/* Shake + red border on invalid city search */
+.search-bar.shake {
+  animation: shake 0.4s ease;
+  border-color: #ff6b6b;
+}
+
+/* =============================================
+   8. MAIN WEATHER CARD (Current Weather)
+============================================= */
+.main-card {
+  width: 100%;
+  max-width: 900px;
+  background: var(--gradient-card);
+  backdrop-filter: blur(25px);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 60px var(--shadow);
+  animation: slideUp 0.8s ease forwards;
+  transition: background 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative radial glow in top-right corner */
+.main-card::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.main-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+/* City name + date section */
+.city-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Green "LIVE" pill badge */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(6, 214, 160, 0.2);
+  color: var(--accent-cool);
+  border: 1px solid rgba(6, 214, 160, 0.3);
+  border-radius: 50px;
+  padding: 0.2rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+}
+
+/* Pulsing green dot inside live badge */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-cool);
+  border-radius: 50%;
+  position: relative;
+}
+
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--accent-cool);
+  animation: pulseRing 1.5s ease-out infinite;
+}
+
+/* City name — scales with viewport using clamp() */
+.city-name {
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+}
+
+.city-date {
+  color: rgba(255,255,255,0.75);
+  font-size: 0.95rem;
+}
+
+/* Temperature block (right-aligned) */
+.temp-display {
+  text-align: right;
+}
+
+/* Giant temperature number — scales fluidly */
+.temp-main {
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(4rem, 12vw, 7rem);
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+  text-shadow: 0 4px 30px rgba(0,0,0,0.2);
+}
+
+.temp-feels {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+/* =============================================
+   9. ANIMATED WEATHER ICON
+      Container for the CSS-drawn animated icons
+============================================= */
+.weather-icon-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 0 0 auto;
+}
+
+.weather-icon-container {
+  width: 120px;
+  height: 120px;
+  position: relative;
+}
+
+/* ---- SUN: glowing circle core ---- */
+.sun-icon {
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, #ffe566, #ffb700);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: sunPulse 3s ease-in-out infinite;
+}
+
+/* ---- SUN: rotating ring of rays ---- */
+.sun-rays {
+  width: 120px;
+  height: 120px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: sunSpin 10s linear infinite;
+}
+
+.sun-ray {
+  position: absolute;
+  width: 6px;
+  height: 20px;
+  background: linear-gradient(#ffe566, transparent);
+  border-radius: 3px;
+  top: 0;
+  left: 50%;
+  transform-origin: 3px 60px;
+}
+
+/* ---- CLOUD: built from CSS pseudo-elements ---- */
+.cloud-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: cloudBob 4s ease-in-out infinite;
+}
+
+.cloud-body {
+  position: relative;
+  width: 90px;
+  height: 40px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 20px;
+}
+
+/* Large left puff of cloud */
+.cloud-body::before {
+  content: '';
+  position: absolute;
+  width: 45px;
+  height: 45px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  top: -22px;
+  left: 15px;
+}
+
+/* Small right puff of cloud */
+.cloud-body::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  top: -14px;
+  left: 45px;
+}
+
+/* ---- RAIN: falling drop lines ---- */
+.rain-drops {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.rain-drop {
+  width: 3px;
+  height: 15px;
+  background: linear-gradient(#74b9ff, transparent);
+  border-radius: 2px;
+  animation: rainFall 1.2s ease-in infinite;
+}
+
+/* Stagger each raindrop so they don't all fall at once */
+.rain-drop:nth-child(2) { animation-delay: 0.3s; }
+.rain-drop:nth-child(3) { animation-delay: 0.6s; }
+.rain-drop:nth-child(4) { animation-delay: 0.1s; }
+.rain-drop:nth-child(5) { animation-delay: 0.8s; }
+
+/* ---- SNOW: drifting Unicode snowflakes ---- */
+.snow-flakes {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+}
+
+.snow-flake {
+  font-size: 14px;
+  color: #a8d8ea;
+  animation: snowDrift 2s ease-in infinite;
+}
+
+.snow-flake:nth-child(2) { animation-delay: 0.5s; }
+.snow-flake:nth-child(3) { animation-delay: 1s; }
+
+/* ---- STORM: flashing lightning bolt ---- */
+.lightning-bolt {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;
+  animation: lightning 3s ease infinite;
+  color: #ffe566;
+}
+
+/* ---- HAZE: sweeping horizontal wind lines ---- */
+.wind-lines {
+  position: absolute;
+  bottom: 15px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wind-line {
+  height: 3px;
+  background: linear-gradient(to right, rgba(255,255,255,0.8), transparent);
+  border-radius: 2px;
+  animation: windBlow 1.5s ease-in-out infinite;
+}
+
+.wind-line:nth-child(1) { width: 50px; animation-delay: 0s; }
+.wind-line:nth-child(2) { width: 35px; animation-delay: 0.3s; }
+.wind-line:nth-child(3) { width: 42px; animation-delay: 0.6s; }
+
+.condition-label {
+  color: rgba(255,255,255,0.85);
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* =============================================
+   10. STATS ROW (Humidity, Wind, UV, etc.)
+============================================= */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.stat-item {
+  background: rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.stat-item:hover {
+  background: rgba(255,255,255,0.22);
+  transform: translateY(-3px);
+}
+
+.stat-icon  { font-size: 1.5rem; margin-bottom: 0.5rem; }
+
+.stat-label {
+  color: rgba(255,255,255,0.65);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  color: white;
+  font-family: 'Space Mono', monospace;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* =============================================
+   11. SECTION TITLE (above forecast grid)
+============================================= */
+.section-title {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideUp 0.9s ease forwards;
+}
+
+.section-title h2 {
+  color: white;
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Horizontal rule extending from title to edge */
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.25);
+}
+
+/* =============================================
+   12. FORECAST CARDS (5-Day Forecast)
+============================================= */
+.forecast-grid {
+  width: 100%;
+  max-width: 900px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 1rem;
+}
+
+.forecast-card {
+  background: var(--gradient-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  animation: slideUp 0.6s ease forwards;
+}
+
+/* Hover: card lifts up + scale slightly */
+.forecast-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  background: var(--bg-card-hover);
+  box-shadow: 0 20px 40px var(--shadow);
+  border-color: rgba(255,255,255,0.4);
+}
+
+/* Invisible glow that reveals on hover */
+.forecast-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.forecast-card:hover::after { opacity: 1; }
+
+.forecast-day {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.25rem;
+}
+
+.forecast-date-num {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+/* Emoji icon bounces slightly on card hover */
+.forecast-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.75rem;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.forecast-card:hover .forecast-icon {
+  transform: scale(1.2) rotate(5deg);
+}
+
+.forecast-condition {
+  color: rgba(255,255,255,0.75);
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+/* High / Low temperature display */
+.forecast-temps {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.temp-high {
+  color: #ffe566;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.temp-separator { color: rgba(255,255,255,0.3); }
+
+.temp-low {
+  color: rgba(255,255,255,0.5);
+  font-family: 'Space Mono', monospace;
+  font-size: 1rem;
+}
+
+/* =============================================
+   13. DETAIL MODAL
+       Pop-up when user clicks a forecast card
+============================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: none;           /* hidden by default */
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* JS adds .open class to show the modal */
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+  background: linear-gradient(145deg, rgba(30, 50, 100, 0.95), rgba(10, 20, 50, 0.95));
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 28px;
+  padding: 2.5rem;
+  max-width: 420px;
+  width: 100%;
+  animation: modalIn 0.35s ease forwards;
+  color: white;
+  position: relative;
+}
+
+/* Lighter background in light mode */
+body:not(.dark) .modal-box {
+  background: linear-gradient(145deg, rgba(100, 150, 240, 0.95), rgba(60, 100, 200, 0.95));
+}
+
+/* × Close button in top-right corner */
+.modal-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.modal-close:hover { background: rgba(255,255,255,0.2); }
+
+.modal-header      { margin-bottom: 1.5rem; }
+
+.modal-day-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.25rem;
+}
+
+.modal-day-full {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.modal-icon-temp {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.modal-emoji { font-size: 4rem; }
+
+.modal-temps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.modal-temp-high {
+  font-family: 'Space Mono', monospace;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffe566;
+}
+
+.modal-temp-low {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.5);
+}
+
+.modal-condition {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 1.5rem;
+}
+
+/* 2-column grid of detail stats inside modal */
+.modal-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.modal-detail-item {
+  background: rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+}
+
+.modal-detail-label {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.25rem;
+}
+
+.modal-detail-value {
+  font-family: 'Space Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* =============================================
+   14. FOOTER
+============================================= */
+footer {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.8rem;
+  text-align: center;
+  animation: slideUp 1s ease forwards;
+  padding-bottom: 1rem;
+}
+
+/* =============================================
+   15. RESPONSIVE DESIGN
+       Breakpoints for mobile and small screens
+============================================= */
+
+/* Tablet / small desktop — stack main card vertically */
+@media (max-width: 600px) {
+  .main-card-top {
+    flex-direction: column;
+  }
+
+  .temp-display {
+    text-align: left;     /* left-align on mobile */
+  }
+
+  .weather-icon-wrap {
+    flex-direction: row;  /* icon + label side by side */
+    gap: 1rem;
+  }
+
+  .forecast-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 cards per row */
+  }
+
+  .main-card {
+    padding: 1.75rem;
+  }
+}
+
+/* Very small phones — 2-column grids */
+@media (max-width: 400px) {
+  .forecast-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stats-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
